@@ -19,18 +19,7 @@ public class ItemService {
     private final UserStorage userStorage;
 
     public Item create(ItemDto item, Long userId) {
-        if (item.getName() == null || item.getName().isBlank()) {
-            throw new ValidationException("Name must not be empty");
-        }
-        if (item.getAvailable() == null) {
-            throw new ValidationException("Availability must not be empty");
-        }
-        if (item.getDescription() == null || item.getDescription().isBlank()) {
-            throw new ValidationException("Description must not be empty");
-        }
-        if (userStorage.getItem(userId) == null) {
-            throw new NotFoundException("Could not find user with id " + userId);
-        }
+        validateItem(item, userId);
         return itemStorage.create(item, userId);
     }
 
@@ -58,6 +47,21 @@ public class ItemService {
             return new ArrayList<>();
         }
         return itemStorage.searchItems(searchText);
+    }
+
+    public void validateItem(ItemDto item, Long userId){
+        if (item.getName() == null || item.getName().isBlank()) {
+            throw new ValidationException("Name must not be empty");
+        }
+        if (item.getAvailable() == null) {
+            throw new ValidationException("Availability must not be empty");
+        }
+        if (item.getDescription() == null || item.getDescription().isBlank()) {
+            throw new ValidationException("Description must not be empty");
+        }
+        if (userStorage.getItem(userId) == null) {
+            throw new NotFoundException("Could not find user with id " + userId);
+        }
     }
 
 }
