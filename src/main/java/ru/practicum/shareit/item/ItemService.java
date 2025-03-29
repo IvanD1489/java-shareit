@@ -49,7 +49,7 @@ public class ItemService {
         return itemStorage.searchItems(searchText);
     }
 
-    public void validateItem(ItemDto item, Long userId){
+    public void validateItem(ItemDto item, Long userId) {
         if (item.getName() == null || item.getName().isBlank()) {
             throw new ValidationException("Name must not be empty");
         }
