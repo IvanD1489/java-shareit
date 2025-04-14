@@ -74,7 +74,7 @@ public class BookingService {
         if (bookingStorage.getItem(bookingId, userId) == null) {
             throw new NotFoundException("Could not booking item to book");
         }
-        if (!Objects.equals(bookingStorage.getItem(bookingId, userId).getBookerId(), userId)) {
+        if(!Objects.equals(itemStorage.getItem(bookingStorage.getItem(bookingId, userId).getItemId(), userId).getOwner(), userId)) {
             throw new ValidationException("Wrong user");
         }
     }
