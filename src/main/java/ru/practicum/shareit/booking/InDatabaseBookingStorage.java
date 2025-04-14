@@ -41,7 +41,6 @@ public class InDatabaseBookingStorage implements BookingStorage {
 
     @Override
     public BookingDto getItem(Long bookingId, Long userId) {
-        //Test
         Optional<Booking> optBooking = repository.findById(bookingId);
         return optBooking.map(booking -> BookingMapper.toBookingDto(booking, itemStorage, userStorage)).orElse(null);
     }
