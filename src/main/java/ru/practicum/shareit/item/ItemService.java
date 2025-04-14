@@ -2,10 +2,11 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.BookingStorage;
+import ru.practicum.shareit.comments.dto.CommentDto;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserStorage;
 
 import java.util.ArrayList;
@@ -17,46 +18,60 @@ public class ItemService {
 
     private final ItemStorage itemStorage;
     private final UserStorage userStorage;
+    private final BookingStorage bookingStorage;
 
-    public Item create(ItemDto item, Long userId) {
-        validateItem(item, userId);
-        return itemStorage.create(item, userId);
+    public ItemDto create(ItemDto itemDto, Long userId) {
+        validateItem(itemDto, userId);
+        return itemStorage.create(itemDto, userId);
     }
 
-    public Item update(Long itemId, ItemDto item, Long userId) {
+    public ItemDto update(Long itemId, ItemDto item, Long userId) {
         if (userStorage.getItem(userId) == null) {
             throw new NotFoundException("Could not find user with id " + userId);
         }
         return itemStorage.update(itemId, item, userId);
     }
 
-    public Collection<Item> getItems(Long userId) {
+    public Collection<ItemDto> getItems(Long userId) {
         return itemStorage.getItems(userId);
     }
 
-    public Item getItem(Long itemId) {
-        return itemStorage.getItem(itemId);
+    public ItemDto getItem(Long itemId, Long userId) {
+        return itemStorage.getItem(itemId, userId);
     }
 
     public void removeItem(Long itemId) {
         itemStorage.removeItem(itemId);
     }
 
-    public Collection<Item> searchItems(String searchText) {
+    public Collection<ItemDto> searchItems(String searchText, Long userId) {
         if (searchText.isBlank()) {
             return new ArrayList<>();
         }
-        return itemStorage.searchItems(searchText);
+        return itemStorage.searchItems(searchText, userId);
     }
 
-    public void validateItem(ItemDto item, Long userId) {
-        if (item.getName() == null || item.getName().isBlank()) {
+    public CommentDto setItemComment(Long itemId, CommentDto commentDto, Long userId) {
+        if (userStorage.getItem(userId) == null) {
+            throw new NotFoundException("Could not find user with id " + userId);
+        }
+        if (itemStorage.getItem(itemId, userId) == null) {
+            throw new NotFoundException("Could not find item with id " + userId);
+        }
+        if (!bookingStorage.isAvailableForComment(itemId, userId)) {
+            throw new ValidationException("Item is not available");
+        }
+        return itemStorage.setItemComment(itemId, commentDto, userId);
+    }
+
+    public void validateItem(ItemDto itemDto, Long userId) {
+        if (itemDto.getName() == null || itemDto.getName().isBlank()) {
             throw new ValidationException("Name must not be empty");
         }
-        if (item.getAvailable() == null) {
+        if (itemDto.getAvailable() == null) {
             throw new ValidationException("Availability must not be empty");
         }
-        if (item.getDescription() == null || item.getDescription().isBlank()) {
+        if (itemDto.getDescription() == null || itemDto.getDescription().isBlank()) {
             throw new ValidationException("Description must not be empty");
         }
         if (userStorage.getItem(userId) == null) {

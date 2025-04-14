@@ -5,13 +5,13 @@ import ru.practicum.shareit.user.dto.UserDto;
 import java.util.Collection;
 
 public interface UserStorage {
-    User create(User entity);
+    UserDto create(UserDto entity);
 
-    User update(Long userId, UserDto user);
+    UserDto update(Long userId, UserDto user);
 
-    User getItem(Long id);
+    UserDto getItem(Long id);
 
-    Collection<User> getItems();
+    Collection<UserDto> getItems();
 
     void removeUser(Long id);
 }
