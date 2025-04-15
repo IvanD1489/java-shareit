@@ -2,14 +2,16 @@ package ru.practicum.shareit.item.dto;
 
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.shareit.comments.dto.CommentDto;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemDto {

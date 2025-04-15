@@ -6,7 +6,7 @@ import java.util.Collection;
 
 public interface BookingStorage {
 
-    BookingDto create(BookingDto entity, Long userId);
+    BookingDto create(BookingDto bookingDto, Long userId);
 
     BookingDto approve(Long bookingId, Long userId, Boolean approved);
 

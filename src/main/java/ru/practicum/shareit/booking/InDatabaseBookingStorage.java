@@ -1,7 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.item.ItemStorage;
@@ -11,7 +12,8 @@ import ru.practicum.shareit.user.UserStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @Service
 public class InDatabaseBookingStorage implements BookingStorage {
@@ -21,11 +23,11 @@ public class InDatabaseBookingStorage implements BookingStorage {
     private final UserStorage userStorage;
 
     @Override
-    public BookingDto create(BookingDto entity, Long userId) {
-        Booking booking = BookingMapper.toBooking(entity);
+    public BookingDto create(BookingDto bookingDto, Long userId) {
+        Booking booking = BookingMapper.toBooking(bookingDto);
         booking.setBooker(userId);
         booking.setStatus(Status.WAITING);
-        return BookingMapper.toBookingDto(repository.save(booking), itemStorage, userStorage);
+        return BookingMapper.toBookingDto(repository.save(booking), itemStorage.getItem(booking.getItemId(), booking.getBooker()), userStorage.getItem(booking.getBooker()));
     }
 
     @Override
@@ -36,20 +38,20 @@ public class InDatabaseBookingStorage implements BookingStorage {
         } else {
             booking.setStatus(Status.REJECTED);
         }
-        return BookingMapper.toBookingDto(repository.save(booking), itemStorage, userStorage);
+        return BookingMapper.toBookingDto(repository.save(booking), itemStorage.getItem(booking.getItemId(), booking.getBooker()), userStorage.getItem(booking.getBooker()));
     }
 
     @Override
     public BookingDto getItem(Long bookingId, Long userId) {
         Optional<Booking> optBooking = repository.findById(bookingId);
-        return optBooking.map(booking -> BookingMapper.toBookingDto(booking, itemStorage, userStorage)).orElse(null);
+        return optBooking.map(booking -> BookingMapper.toBookingDto(booking, itemStorage.getItem(booking.getItemId(), booking.getBooker()), userStorage.getItem(booking.getBooker()))).orElse(null);
     }
 
     @Override
     public Collection<BookingDto> getItems(Long userId) {
         List<Booking> bookings = repository.findAll();
         return bookings.stream()
-                .map(booking -> BookingMapper.toBookingDto(booking, itemStorage, userStorage))
+                .map(booking -> BookingMapper.toBookingDto(booking, itemStorage.getItem(booking.getItemId(), booking.getBooker()), userStorage.getItem(booking.getBooker())))
                 .filter(booking -> Objects.equals(booking.getBookerId(), userId))
                 .sorted(Comparator.comparing(BookingDto::getId))
                 .collect(Collectors.toList());
@@ -59,7 +61,7 @@ public class InDatabaseBookingStorage implements BookingStorage {
     public Collection<BookingDto> getBookingsByOwnerItems(Long ownerId) {
         return repository.getBookingsByOwnerItems(ownerId)
                 .stream()
-                .map(booking -> BookingMapper.toBookingDto(booking, itemStorage, userStorage))
+                .map(booking -> BookingMapper.toBookingDto(booking, itemStorage.getItem(booking.getItemId(), booking.getBooker()), userStorage.getItem(booking.getBooker())))
                 .collect(Collectors.toList());
     }
 

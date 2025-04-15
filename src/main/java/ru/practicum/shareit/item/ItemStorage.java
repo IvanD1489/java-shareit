@@ -8,7 +8,7 @@ import java.util.Collection;
 
 public interface ItemStorage {
 
-    ItemDto create(ItemDto entity, Long userId);
+    ItemDto create(ItemDto itemDto, Long userId);
 
     ItemDto update(Long itemId, ItemDto item, Long userId);
 

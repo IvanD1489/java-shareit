@@ -17,20 +17,20 @@ public class InDatabaseUserStorage implements UserStorage {
     }
 
     @Override
-    public UserDto create(UserDto entity) {
-        User user = UserMapper.toUser(entity);
+    public UserDto create(UserDto userDto) {
+        User user = UserMapper.toUser(userDto);
         return UserMapper.toUserDto(repository.save(user));
     }
 
     @Override
-    public UserDto update(Long userId, UserDto entity) {
-        User retVal = UserMapper.toUser(entity);
+    public UserDto update(Long userId, UserDto userDto) {
+        User retVal = UserMapper.toUser(userDto);
         User user = repository.getById(userId);
         retVal.setId(user.getId());
-        if (entity.getEmail() == null) {
+        if (userDto.getEmail() == null) {
             retVal.setEmail(user.getEmail());
         }
-        if (entity.getName() == null) {
+        if (userDto.getName() == null) {
             retVal.setName(user.getName());
         }
         return UserMapper.toUserDto(repository.save(retVal));

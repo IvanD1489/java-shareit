@@ -6,6 +6,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemStorage;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.UserStorage;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,8 @@ public class BookingService {
     private final BookingStorage bookingStorage;
 
     public BookingDto create(BookingDto bookingDto, Long userId) {
-        validateCreateItem(bookingDto, userId);
+        validateBooking(bookingDto, userId);
+        validateUser(userId);
         return bookingStorage.create(bookingDto, userId);
     }
 
@@ -45,17 +47,17 @@ public class BookingService {
         return bookingStorage.getBookingsByOwnerItems(userId);
     }
 
-    private void validateCreateItem(BookingDto bookingDto, Long userId) {
+    private void validateBooking(BookingDto bookingDto, Long userId) {
         if (bookingDto.getItemId() == null) {
             throw new NotFoundException("Could not find item to book");
         }
-        if (itemStorage.getItem(bookingDto.getItemId(), userId) == null) {
+        ItemDto itemDto = itemStorage.getItem(bookingDto.getItemId(), userId);
+        if (itemDto == null) {
             throw new NotFoundException("Could not find item to book");
         }
-        if (!itemStorage.getItem(bookingDto.getItemId(), userId).getAvailable()) {
+        if (!itemDto.getAvailable()) {
             throw new ValidationException("This item is unavailable");
         }
-        validateUser(userId);
         if (bookingDto.getEnd().isBefore(LocalDateTime.now())) {
             throw new ValidationException("Booking end date cant be in past");
         }

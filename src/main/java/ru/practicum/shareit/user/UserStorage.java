@@ -5,7 +5,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import java.util.Collection;
 
 public interface UserStorage {
-    UserDto create(UserDto entity);
+    UserDto create(UserDto userDto);
 
     UserDto update(Long userId, UserDto user);
 

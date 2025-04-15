@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -19,8 +21,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
+@Setter
 @Service
+@AllArgsConstructor
 public class InDatabaseItemStorage implements ItemStorage {
 
     private final ItemRepository repository;
@@ -29,32 +33,40 @@ public class InDatabaseItemStorage implements ItemStorage {
     private final BookingRepository bookingRepository;
 
     @Override
-    public ItemDto create(ItemDto entity, Long userId) {
-        Item item = ItemMapper.toItem(entity);
+    public ItemDto create(ItemDto itemDto, Long userId) {
+        Item item = ItemMapper.toItem(itemDto);
         item.setOwner(userId);
-        return ItemMapper.toItemDto(repository.save(item), this, userId);
+        return ItemMapper.toItemDto(repository.save(item),
+                getLastBooking(item.getId(), item.getOwner(), userId),
+                getNextBooking(item.getId(), item.getOwner(), userId),
+                getItemComments(item.getId()));
     }
 
     @Override
-    public ItemDto update(Long itemId, ItemDto entity, Long userId) {
+    public ItemDto update(Long itemId, ItemDto itemDto, Long userId) {
         Item item = repository.getById(itemId);
-        entity.setId(item.getId());
-        if (entity.getAvailable() == null) {
-            entity.setAvailable(item.isAvailable());
+        itemDto.setId(item.getId());
+        if (itemDto.getAvailable() == null) {
+            itemDto.setAvailable(item.isAvailable());
         }
-        if (entity.getDescription() == null) {
-            entity.setDescription(item.getDescription());
+        if (itemDto.getDescription() == null) {
+            itemDto.setDescription(item.getDescription());
         }
-        if (entity.getName() == null) {
-            entity.setName(item.getName());
+        if (itemDto.getName() == null) {
+            itemDto.setName(item.getName());
         }
-        return ItemMapper.toItemDto(repository.save(ItemMapper.toItem(entity)), this, userId);
+        return ItemMapper.toItemDto(repository.save(ItemMapper.toItem(itemDto)),
+                getLastBooking(item.getId(), item.getOwner(), userId),
+                getNextBooking(item.getId(), item.getOwner(), userId),
+                getItemComments(item.getId()));
     }
 
     @Override
     public ItemDto getItem(Long id, Long userId) {
         Optional<Item> optItem = repository.findById(id);
-        return optItem.map(item -> ItemMapper.toItemDto(item, this, userId)).orElse(null);
+        return optItem.map(item -> ItemMapper.toItemDto(item, getLastBooking(item.getId(), item.getOwner(), userId),
+                getNextBooking(item.getId(), item.getOwner(), userId),
+                getItemComments(item.getId()))).orElse(null);
     }
 
     @Override
@@ -62,7 +74,9 @@ public class InDatabaseItemStorage implements ItemStorage {
         return repository.findAll()
                 .stream()
                 .filter(item -> Objects.equals(item.getOwner(), userId))
-                .map(item -> ItemMapper.toItemDto(item, this, userId))
+                .map(item -> ItemMapper.toItemDto(item, getLastBooking(item.getId(), item.getOwner(), userId),
+                        getNextBooking(item.getId(), item.getOwner(), userId),
+                        getItemComments(item.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -76,7 +90,9 @@ public class InDatabaseItemStorage implements ItemStorage {
         return repository.findAll()
                 .stream()
                 .filter(item -> (item.getName().toLowerCase() + item.getDescription().toLowerCase()).contains(searchText.toLowerCase()) && item.isAvailable())
-                .map(item -> ItemMapper.toItemDto(item, this, userId))
+                .map(item -> ItemMapper.toItemDto(item, getLastBooking(item.getId(), item.getOwner(), userId),
+                        getNextBooking(item.getId(), item.getOwner(), userId),
+                        getItemComments(item.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -85,12 +101,12 @@ public class InDatabaseItemStorage implements ItemStorage {
         Comment comment = CommentMapper.toComment(commentDto);
         comment.setItemId(itemId);
         comment.setAuthorId(userId);
-        return CommentMapper.toCommentDto(commentRepository.save(comment), userStorage);
+        return CommentMapper.toCommentDto(commentRepository.save(comment), userStorage.getItem(comment.getAuthorId()).getName());
     }
 
     @Override
     public Collection<CommentDto> getItemComments(Long itemId) {
-        return commentRepository.findByItemId(itemId).stream().map(comment -> CommentMapper.toCommentDto(comment, userStorage)).collect(Collectors.toList());
+        return commentRepository.findByItemId(itemId).stream().map(comment -> CommentMapper.toCommentDto(comment, userStorage.getItem(comment.getAuthorId()).getName())).collect(Collectors.toList());
     }
 
     @Override
