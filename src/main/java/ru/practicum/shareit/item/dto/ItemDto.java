@@ -2,14 +2,21 @@ package ru.practicum.shareit.item.dto;
 
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import ru.practicum.shareit.comments.dto.CommentDto;
 
-@Data
+import java.time.LocalDateTime;
+import java.util.Collection;
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemDto {
 
+    private Long id;
     @Nullable
     private String name;
     @Nullable
@@ -17,5 +24,9 @@ public class ItemDto {
     @Nullable
     private Boolean available;
     private Long request;
+    private Long owner;
+    private LocalDateTime lastBooking;
+    private LocalDateTime nextBooking;
+    private Collection<CommentDto> comments;
 
 }
